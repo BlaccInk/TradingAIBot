@@ -1,15 +1,43 @@
-            - name: Buildozer action
-  # You may pin to the exact commit or the version.
-  # uses: ArtemSBulgakov/buildozer-action@3808a27e5d64e3921ed1735dacc214aeaec38080
-  uses: ArtemSBulgakov/buildozer-action@v1.2.0
-  with:
-    # Command to start Buildozer. Set to `buildozer ios debug` for iOS
-    command: # default is buildozer android debug
-    # Path to cloned repository. Set if you specified path for `actions/checkout` action.
-    repository_root: # default is .
-    # Working directory where buildozer.spec is located. Set to `src` if buildozer.spec is in `src` directory
-    workdir: # default is .
-    # Version of Buildozer to install. By default installs latest release
-    buildozer_version: # default is stable
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install buildozer cython
+        
+    - name: Build APK with Buildozer
+      uses: ArtemSBulgakov/buildozer-action@v1.2.0
+      with:
+        command: buildozer android debug
+        repository_root: .
+        workdir: .
+        buildozer_version: stable
+        
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: apk-debug
+        path: bin/*.apk
+        retention-days: 30
           
           
